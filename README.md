@@ -54,9 +54,7 @@ func init() {
 
 func TestMain(m *testing.M) {
     // Create manager with registered services
-    servicesMap := services.NewServicesMap()
-    servicesMap.Enable("postgres")
-    servicesMap.Enable("redis")
+    servicesMap := services.NewServicesMap("postgres", "redis")
 
     manager := services.NewManager(servicesMap, services.DefaultManagerConfig())
 
@@ -126,10 +124,48 @@ func init() {
 func TestMain(m *testing.M) {
     // Use builder for advanced configuration
     manager := services.NewBuilder().
-        WithServiceSimple("postgres", testcontainers.WithImage("postgres:15")).
-        WithServiceSimple("redis", testcontainers.WithImage("redis:7")).
+        WithService("postgres", testcontainers.WithImage("postgres:15")).
+        WithService("redis", testcontainers.WithImage("redis:7")).
         Build()
 
+    env := gtt.NewEnv(gtt.EnvConfig{}, manager)
+    gtt.CallMain(env, m)
+}
+```
+
+### Advanced Configuration with Fluent API
+
+```go
+import (
+    "github.com/Educentr/goat/services"
+    testcontainers "github.com/testcontainers/testcontainers-go"
+
+    "github.com/Educentr/goat-services/psql"
+    "github.com/Educentr/goat-services/redis"
+    "github.com/Educentr/goat-services/clickhouse"
+)
+
+func init() {
+    services.MustRegisterServiceFunc("postgres", psql.Run)
+    services.MustRegisterServiceFunc("redis", redis.Run)
+    services.MustRegisterServiceFunc("clickhouse", clickhouse.Run)
+}
+
+func TestMain(m *testing.M) {
+    // Configure services with priorities, options, and dependencies
+    servicesMap := services.NewServicesMap("postgres", "redis", "clickhouse").
+        WithPriority("postgres", 1).
+        WithPriority("redis", 2).
+        WithPriority("clickhouse", 3).
+        WithOptions("postgres",
+            testcontainers.WithImage("postgres:15"),
+            testcontainers.WithEnv(map[string]string{
+                "POSTGRES_MAX_CONNECTIONS": "200",
+            }),
+        ).
+        WithDependencies("clickhouse", "postgres")
+
+    manager := services.NewManager(servicesMap, services.DefaultManagerConfig())
     env := gtt.NewEnv(gtt.EnvConfig{}, manager)
     gtt.CallMain(env, m)
 }
@@ -228,4 +264,14 @@ MIT
 
 ## Version
 
-v0.1.0
+v0.2.0
+
+## Changelog
+
+### v0.2.0
+- Updated examples to use new GOAT v0.3.0 API
+- Removed deprecated `Enable()` and `WithServiceSimple()` usage
+- Added examples of fluent configuration API
+
+### v0.1.0
+- Initial release with support for PostgreSQL, Redis, ClickHouse, S3, MinIO, Jaeger, VictoriaMetrics, Xray, and Singbox
