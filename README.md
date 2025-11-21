@@ -37,7 +37,6 @@ package myapp_test
 
 import (
     "testing"
-    "context"
 
     gtt "github.com/Educentr/goat"
     "github.com/Educentr/goat/services"
@@ -47,9 +46,9 @@ import (
 )
 
 func init() {
-    // Register services from goat-services
-    services.MustRegisterServiceFunc("postgres", psql.Run)
-    services.MustRegisterServiceFunc("redis", redis.Run)
+    // Register services from goat-services (type-safe, no wrapper needed)
+    services.MustRegisterServiceFuncTyped("postgres", psql.Run)
+    services.MustRegisterServiceFuncTyped("redis", redis.Run)
 }
 
 func TestMain(m *testing.M) {
@@ -92,16 +91,16 @@ import (
 )
 
 func init() {
-    // Register all available services
-    services.MustRegisterServiceFunc("postgres", psql.Run)
-    services.MustRegisterServiceFunc("redis", redis.Run)
-    services.MustRegisterServiceFunc("clickhouse", clickhouse.Run)
-    services.MustRegisterServiceFunc("s3", s3.Run)
-    services.MustRegisterServiceFunc("minio", minio.Run)
-    services.MustRegisterServiceFunc("jaeger", jaeger.Run)
-    services.MustRegisterServiceFunc("victoriametrics", victoriametrics.Run)
-    services.MustRegisterServiceFunc("xray", xray.Run)
-    services.MustRegisterServiceFunc("singbox", singbox.Run)
+    // Register all available services (type-safe)
+    services.MustRegisterServiceFuncTyped("postgres", psql.Run)
+    services.MustRegisterServiceFuncTyped("redis", redis.Run)
+    services.MustRegisterServiceFuncTyped("clickhouse", clickhouse.Run)
+    services.MustRegisterServiceFuncTyped("s3", s3.Run)
+    services.MustRegisterServiceFuncTyped("minio", minio.Run)
+    services.MustRegisterServiceFuncTyped("jaeger", jaeger.Run)
+    services.MustRegisterServiceFuncTyped("victoriametrics", victoriametrics.Run)
+    services.MustRegisterServiceFuncTyped("xray", xray.Run)
+    services.MustRegisterServiceFuncTyped("singbox", singbox.Run)
 }
 ```
 
@@ -117,8 +116,8 @@ import (
 )
 
 func init() {
-    services.MustRegisterServiceFunc("postgres", psql.Run)
-    services.MustRegisterServiceFunc("redis", redis.Run)
+    services.MustRegisterServiceFuncTyped("postgres", psql.Run)
+    services.MustRegisterServiceFuncTyped("redis", redis.Run)
 }
 
 func TestMain(m *testing.M) {
@@ -146,9 +145,9 @@ import (
 )
 
 func init() {
-    services.MustRegisterServiceFunc("postgres", psql.Run)
-    services.MustRegisterServiceFunc("redis", redis.Run)
-    services.MustRegisterServiceFunc("clickhouse", clickhouse.Run)
+    services.MustRegisterServiceFuncTyped("postgres", psql.Run)
+    services.MustRegisterServiceFuncTyped("redis", redis.Run)
+    services.MustRegisterServiceFuncTyped("clickhouse", clickhouse.Run)
 }
 
 func TestMain(m *testing.M) {
@@ -264,9 +263,13 @@ MIT
 
 ## Version
 
-v0.2.0
+v0.3.0
 
 ## Changelog
+
+### v0.3.0
+- Updated examples to use new GOAT v0.4.0 API with `MustRegisterServiceFuncTyped`
+- Simplified registration: no more manual type wrappers needed
 
 ### v0.2.0
 - Updated examples to use new GOAT v0.3.0 API
