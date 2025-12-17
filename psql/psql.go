@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/docker/go-connections/nat"
@@ -37,6 +38,9 @@ type (
 		DBPass string
 		DBPort string
 		DBHost string
+
+		db   *sql.DB
+		dbMu sync.Mutex
 	}
 )
 
@@ -44,7 +48,23 @@ var (
 	defaultImage = common.DockerProxy("postgres:15.3-alpine3.18")
 )
 
-func (e *Env) SQL() (*sql.DB, error) { return sql.Open("postgres", e.URI) }
+// SQL returns a cached database connection. The connection is created on first call
+// and reused on subsequent calls to prevent connection pool exhaustion.
+func (e *Env) SQL() (*sql.DB, error) {
+	e.dbMu.Lock()
+	defer e.dbMu.Unlock()
+
+	if e.db != nil {
+		return e.db, nil
+	}
+
+	db, err := sql.Open("postgres", e.URI)
+	if err != nil {
+		return nil, err
+	}
+	e.db = db
+	return e.db, nil
+}
 
 func Run(ctx context.Context, opts ...testcontainers.ContainerCustomizer) (*Env, error) {
 	req := testcontainers.GenericContainerRequest{
