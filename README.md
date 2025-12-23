@@ -13,6 +13,7 @@ This package provides ready-to-use service container runners built on [testconta
 - **PostgreSQL** (`psql`) - PostgreSQL database
 - **Redis** (`redis`) - Redis cache
 - **ClickHouse** (`clickhouse`) - ClickHouse analytics database
+- **Kafka** (`kafka`) - Apache Kafka message broker
 - **S3** (`s3`) - S3-compatible storage via LocalStack
 - **MinIO** (`minio`) - MinIO object storage
 - **Jaeger** (`jaeger`) - Jaeger distributed tracing
@@ -82,6 +83,7 @@ import (
     "github.com/Educentr/goat-services/psql"
     "github.com/Educentr/goat-services/redis"
     "github.com/Educentr/goat-services/clickhouse"
+    "github.com/Educentr/goat-services/kafka"
     "github.com/Educentr/goat-services/s3"
     "github.com/Educentr/goat-services/minio"
     "github.com/Educentr/goat-services/jaeger"
@@ -95,6 +97,7 @@ func init() {
     services.MustRegisterServiceFuncTyped("postgres", psql.Run)
     services.MustRegisterServiceFuncTyped("redis", redis.Run)
     services.MustRegisterServiceFuncTyped("clickhouse", clickhouse.Run)
+    services.MustRegisterServiceFuncTyped("kafka", kafka.Run)
     services.MustRegisterServiceFuncTyped("s3", s3.Run)
     services.MustRegisterServiceFuncTyped("minio", minio.Run)
     services.MustRegisterServiceFuncTyped("jaeger", jaeger.Run)
@@ -231,6 +234,7 @@ goat-services/
 ├── psql/           - PostgreSQL service
 ├── redis/          - Redis service
 ├── clickhouse/     - ClickHouse service
+├── kafka/          - Kafka service
 ├── s3/             - S3/LocalStack service
 ├── minio/          - MinIO service
 ├── jaeger/         - Jaeger service

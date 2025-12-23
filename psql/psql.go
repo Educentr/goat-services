@@ -74,7 +74,7 @@ func Run(ctx context.Context, opts ...testcontainers.ContainerCustomizer) (*Env,
 	}
 
 	for _, e := range opts {
-		_ = e.Customize(&req) //nolint:errcheck 
+		_ = e.Customize(&req) //nolint:errcheck
 	}
 
 	if req.Image == "" {
