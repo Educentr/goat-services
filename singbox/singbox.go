@@ -19,6 +19,8 @@ import (
 	common "github.com/Educentr/goat-services/common"
 )
 
+const tunInterfaceLabelKey = "goat.singbox.tun-interface"
+
 // Env contains the sing-box container and connection details
 type Env struct {
 	testcontainers.Container
@@ -47,6 +49,19 @@ func WithNetworks(networks []string) testcontainers.CustomizeRequestOption {
 		req.ContainerRequest.Networks = networks
 		return nil
 	}
+}
+
+// WithTUNInterfaceMatch sets the interface name pattern to match when waiting for TUN interface.
+// Default is "tun". This is only used for TUN-only configurations (without SOCKS5/HTTP ports).
+// Example: WithTUNInterfaceMatch("tun0") will wait for interface containing "tun0" in its name.
+func WithTUNInterfaceMatch(interfaceName string) testcontainers.ContainerCustomizer {
+	return testcontainers.CustomizeRequestOption(func(req *testcontainers.GenericContainerRequest) error {
+		if req.ContainerRequest.Labels == nil {
+			req.ContainerRequest.Labels = make(map[string]string)
+		}
+		req.ContainerRequest.Labels[tunInterfaceLabelKey] = interfaceName
+		return nil
+	})
 }
 
 // CreateNetworkWithMTU creates a Docker bridge network with specified MTU
@@ -214,6 +229,12 @@ func Run(ctx context.Context, opts ...testcontainers.ContainerCustomizer) (*Env,
 		// If we have SOCKS5 or HTTP port, wait for it
 		waitStrategy = wait.ForListeningPort(waitPort)
 	} else if hasTUN {
+		// Get TUN interface name from labels (default to "tun")
+		tunInterfaceName := "tun"
+		if name, ok := req.ContainerRequest.Labels[tunInterfaceLabelKey]; ok && name != "" {
+			tunInterfaceName = name
+		}
+
 		// For TUN-only config, wait for TUN interface to be created
 		// Use ip addr show to check for tun interface presence
 		waitStrategy = wait.ForExec([]string{"ip", "addr", "show"}).
@@ -222,8 +243,8 @@ func Run(ctx context.Context, opts ...testcontainers.ContainerCustomizer) (*Env,
 				if err != nil {
 					return false
 				}
-				// Check if output contains "tun" which indicates TUN interface is present
-				return bytes.Contains(output, []byte("tun"))
+				// Check if output contains the interface name which indicates TUN interface is present
+				return bytes.Contains(output, []byte(tunInterfaceName))
 			}).
 			WithPollInterval(1 * time.Second).
 			WithStartupTimeout(60 * time.Second)
