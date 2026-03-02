@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types/network"
@@ -60,6 +61,20 @@ func WithTUNInterfaceMatch(interfaceName string) testcontainers.ContainerCustomi
 			req.ContainerRequest.Labels = make(map[string]string)
 		}
 		req.ContainerRequest.Labels[tunInterfaceLabelKey] = interfaceName
+		return nil
+	})
+}
+
+// WithVersion sets the sing-box image version tag.
+// If the image already contains a tag, it will be replaced.
+// Example: WithVersion("1.10.0") results in "ghcr.io/sagernet/sing-box:1.10.0"
+func WithVersion(version string) testcontainers.ContainerCustomizer {
+	return testcontainers.CustomizeRequestOption(func(req *testcontainers.GenericContainerRequest) error {
+		img := req.Image
+		if i := strings.LastIndex(img, ":"); i > strings.LastIndex(img, "/") {
+			img = img[:i]
+		}
+		req.Image = img + ":" + version
 		return nil
 	})
 }
